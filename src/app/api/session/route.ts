@@ -2,10 +2,20 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
+    // Check if API key is configured
     if (!process.env.OPENAI_API_KEY) {
       console.error("OPENAI_API_KEY is not set in environment variables");
       return NextResponse.json(
-        { error: "OpenAI API key is not configured. Please set OPENAI_API_KEY in your .env file." },
+        { error: "OpenAI API key is not configured. Please set OPENAI_API_KEY in your .env file and restart the server." },
+        { status: 500 }
+      );
+    }
+
+    // Check if API key is just the placeholder
+    if (process.env.OPENAI_API_KEY === 'your_openai_api_key_here' || process.env.OPENAI_API_KEY === 'your_api_key') {
+      console.error("OPENAI_API_KEY is set to placeholder value");
+      return NextResponse.json(
+        { error: "Please replace the placeholder API key in your .env file with your actual OpenAI API key and restart the server." },
         { status: 500 }
       );
     }
@@ -27,6 +37,15 @@ export async function GET() {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`OpenAI API error: ${response.status} ${response.statusText}`, errorText);
+      
+      // Provide specific error messages for common issues
+      if (response.status === 401) {
+        return NextResponse.json(
+          { error: "Invalid OpenAI API key. Please check your API key in the .env file." },
+          { status: 401 }
+        );
+      }
+      
       return NextResponse.json(
         { error: `OpenAI API error: ${response.status} ${response.statusText}` },
         { status: response.status }
@@ -38,6 +57,15 @@ export async function GET() {
   } catch (error) {
     console.error("Error in /session:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    
+    // Handle specific network errors
+    if (errorMessage.includes('fetch failed') || errorMessage.includes('SocketError')) {
+      return NextResponse.json(
+        { error: "Failed to connect to OpenAI API. Please check your API key and network connection." },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json(
       { error: `Failed to connect to OpenAI API: ${errorMessage}` },
       { status: 500 }
