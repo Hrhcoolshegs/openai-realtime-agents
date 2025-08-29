@@ -71,21 +71,25 @@ function App() {
   // Ref to identify whether the latest agent switch came from an automatic handoff
   const handoffTriggeredRef = useRef(false);
 
-  const sdkAudioElement = React.useMemo(() => {
-    if (typeof window === 'undefined') return undefined;
+  const [sdkAudioElement, setSdkAudioElement] = useState<HTMLAudioElement | undefined>(undefined);
+
+  // Initialize client-only state and audio element
+  useEffect(() => {
+    setIsClient(true);
+    
     const el = document.createElement('audio');
     el.autoplay = true;
     el.style.display = 'none';
     document.body.appendChild(el);
-    return el;
-  }, []);
+    setSdkAudioElement(el);
+    audioElementRef.current = el;
 
-  // Attach SDK audio element once it exists (after first render in browser)
-  useEffect(() => {
-    if (sdkAudioElement && !audioElementRef.current) {
-      audioElementRef.current = sdkAudioElement;
+    return () => {
+      if (el.parentNode) {
+        el.parentNode.removeChild(el);
+      }
     }
-  }, [sdkAudioElement]);
+  }, []);
 
   const {
     connect,
@@ -111,6 +115,7 @@ function App() {
   const [isPTTActive, setIsPTTActive] = useState<boolean>(false);
   const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState<boolean>(false);
   const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] = useState<boolean>(true);
+  const [isClient, setIsClient] = useState<boolean>(false);
 
   // Initialize the recording hook.
   const { startRecording, stopRecording, downloadRecording } =
@@ -359,17 +364,22 @@ function App() {
     if (storedAudioPlaybackEnabled) {
       setIsAudioPlaybackEnabled(storedAudioPlaybackEnabled === "true");
     }
-  }, []);
+  }, [isClient]);
 
   useEffect(() => {
+    if (!isClient) return;
     localStorage.setItem("pushToTalkUI", isPTTActive.toString());
   }, [isPTTActive]);
 
   useEffect(() => {
+    if (!isClient) return;
+    if (!isClient) return;
+    
     localStorage.setItem("logsExpanded", isEventsPaneExpanded.toString());
   }, [isEventsPaneExpanded]);
 
   useEffect(() => {
+    if (!isClient) return;
     localStorage.setItem(
       "audioPlaybackEnabled",
       isAudioPlaybackEnabled.toString()
