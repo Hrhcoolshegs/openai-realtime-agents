@@ -110,7 +110,7 @@ function App() {
     useState<SessionStatus>("DISCONNECTED");
 
   const [isEventsPaneExpanded, setIsEventsPaneExpanded] =
-    useState<boolean>(true);
+    useState<boolean>(false);
   const [userText, setUserText] = useState<string>("");
   const [isPTTActive, setIsPTTActive] = useState<boolean>(false);
   const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState<boolean>(false);
@@ -180,6 +180,15 @@ function App() {
   const fetchEphemeralKey = async (): Promise<string | null> => {
     logClientEvent({ url: "/session" }, "fetch_session_token_request");
     const tokenResponse = await fetch("/api/session");
+    
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      logClientEvent({ error: errorText, status: tokenResponse.status }, "fetch_session_token_error");
+      console.error(`Failed to fetch ephemeral key: ${tokenResponse.status} ${tokenResponse.statusText}`, errorText);
+      setSessionStatus("DISCONNECTED");
+      return null;
+    }
+    
     const data = await tokenResponse.json();
     logServerEvent(data, "fetch_session_token_response");
 
