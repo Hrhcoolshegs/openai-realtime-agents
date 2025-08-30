@@ -20,6 +20,15 @@ export async function GET() {
       );
     }
 
+    // Validate API key format (should start with sk-)
+    if (!process.env.OPENAI_API_KEY.startsWith('sk-')) {
+      console.error("OPENAI_API_KEY appears to be invalid format");
+      return NextResponse.json(
+        { error: "Invalid OpenAI API key format. API keys should start with 'sk-'. Please check your .env file." },
+        { status: 500 }
+      );
+    }
+
     const response = await fetch(
       "https://api.openai.com/v1/realtime/sessions",
       {
@@ -43,6 +52,13 @@ export async function GET() {
         return NextResponse.json(
           { error: "Invalid OpenAI API key. Please check your API key in the .env file." },
           { status: 401 }
+        );
+      }
+      
+      if (response.status === 403) {
+        return NextResponse.json(
+          { error: "Access denied. Your API key may not have access to the Realtime API." },
+          { status: 403 }
         );
       }
       
