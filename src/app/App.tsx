@@ -95,7 +95,7 @@ function App() {
       if (el.parentNode) {
         el.parentNode.removeChild(el);
       }
-    }
+    };
   }, []);
 
   const {
@@ -308,7 +308,7 @@ function App() {
       sendSimulatedUserMessage('hi');
     }
     return;
-  }
+  };
 
   const handleSendTextMessage = () => {
     if (!userText.trim()) return;
@@ -552,20 +552,21 @@ function App() {
             </div>
           )}
         </div>
-          isPTTActive={isPTTActive || false}
+      </div>
 
       <div className="flex flex-1 gap-2 px-2 overflow-hidden relative">
         <Transcript
           userText={userText}
+          setUserText={setUserText}
           isEventsPaneExpanded={isEventsPaneExpanded || false}
           onSendMessage={handleSendTextMessage}
           isAudioPlaybackEnabled={isAudioPlaybackEnabled || true}
           canSend={
             sessionStatus === "CONNECTED"
           }
+          isPTTActive={isPTTActive || false}
         />
 
-        <Events isExpanded={isEventsPaneExpanded} />
         <Events isExpanded={isEventsPaneExpanded ?? false} />
       </div>
 
@@ -583,6 +584,7 @@ function App() {
         setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
         codec={urlCodec}
         onCodecChange={handleCodecChange}
+        downloadRecording={downloadRecording}
       />
     </div>
   );
