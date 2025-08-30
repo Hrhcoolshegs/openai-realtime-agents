@@ -1,5 +1,5 @@
 import { RealtimeAgent, tool } from '@openai/agents/realtime';
-import { mockPatients, mockAppointments } from './mockData';
+import { mockPatients } from './mockData';
 
 export const appointmentSpecialistAgent = new RealtimeAgent({
   name: 'appointmentSpecialist',
@@ -100,7 +100,7 @@ Efficient but not rushed - you want to ensure all details are correct and patien
         additionalProperties: false,
       },
       execute: async (input: any) => {
-        const { appointment_type, preferred_timeframe, time_preference, day_preferences } = input;
+        const { appointment_type, time_preference, day_preferences } = input;
         
         // Mock availability data for next 2 weeks
         const mockAvailability = [
@@ -202,13 +202,11 @@ Efficient but not rushed - you want to ensure all details are correct and patien
       },
       execute: async (input: any) => {
         const { 
-          patient_phone, 
           patient_name, 
           appointment_type, 
           appointment_date, 
           appointment_time,
           is_new_patient,
-          insurance_provider,
           reminder_preference 
         } = input;
         
@@ -236,7 +234,6 @@ Efficient but not rushed - you want to ensure all details are correct and patien
           confirmation: `Appointment confirmed for ${patient_name} on ${formattedDate} at ${appointment_time} for ${appointment_type}`,
           appointment_details: {
             patient: patient_name,
-            phone: patient_phone,
             date: formattedDate,
             time: appointment_time,
             type: appointment_type,
@@ -282,7 +279,7 @@ Efficient but not rushed - you want to ensure all details are correct and patien
         additionalProperties: false,
       },
       execute: async (input: any) => {
-        const { patient_phone, current_appointment_date, new_preferred_timeframe } = input;
+        const { current_appointment_date } = input;
         
         // Mock existing appointment lookup
         const existingAppointment = {

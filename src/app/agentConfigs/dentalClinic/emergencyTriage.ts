@@ -1,5 +1,4 @@
 import { RealtimeAgent, tool } from '@openai/agents/realtime';
-import { mockPatients, emergencyScenarios } from './mockData';
 
 export const emergencyTriageAgent = new RealtimeAgent({
   name: 'emergencyTriage',
@@ -111,7 +110,7 @@ Speak efficiently but not rushed - patients need to feel you're taking their eme
         additionalProperties: false,
       },
       execute: async (input: any) => {
-        const { patient_phone, symptoms, pain_level, severity_assessment, recommended_action } = input;
+        const { _patient_phone, _symptoms, _pain_level, severity_assessment, recommended_action } = input;
         
         // Mock emergency triage response
         const emergencyId = `EMG-${Date.now()}`;
@@ -175,7 +174,7 @@ Speak efficiently but not rushed - patients need to feel you're taking their eme
         additionalProperties: false,
       },
       execute: async (input: any) => {
-        const { patient_phone, appointment_type, symptoms_summary } = input;
+        const { _patient_phone, appointment_type, _symptoms_summary } = input;
         
         const appointmentId = `APPT-EMG-${Date.now()}`;
         

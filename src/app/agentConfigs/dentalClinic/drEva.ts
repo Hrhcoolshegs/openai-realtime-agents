@@ -98,40 +98,6 @@ Speak at a measured pace that allows patients to process information, especially
         additionalProperties: false,
       },
       execute: async (input: any) => {
-        // Mock patient data
-        const patients = [
-          {
-            id: 'P001',
-            name: 'Maria Rodriguez',
-            phone: '(555) 123-4567',
-            email: 'maria.rodriguez@email.com',
-            last_visit: '2024-10-15',
-            next_cleaning: '2025-04-15',
-            insurance: 'Delta Dental',
-            notes: 'Prefers morning appointments, has dental anxiety'
-          },
-          {
-            id: 'P002',
-            name: 'John Smith',
-            phone: '(555) 234-5678',
-            email: 'john.smith@email.com',
-            last_visit: '2024-11-20',
-            next_cleaning: '2025-05-20',
-            insurance: 'Cigna',
-            notes: 'Regular patient, no special needs'
-          },
-          {
-            id: 'P003',
-            name: 'Sarah Johnson',
-            phone: '(555) 345-6789',
-            email: 'sarah.johnson@email.com',
-            last_visit: '2024-09-30',
-            next_cleaning: '2025-03-30',
-            insurance: 'Aetna',
-            notes: 'Needs sedation for procedures'
-          }
-        ];
-
         const { phone_number, patient_name } = input;
         
         let patient = null;
