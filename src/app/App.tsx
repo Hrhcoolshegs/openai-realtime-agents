@@ -75,8 +75,6 @@ function App() {
 
   // Initialize client-only state and audio element
   useEffect(() => {
-    setIsClient(true);
-    
     const el = document.createElement('audio');
     el.autoplay = true;
     el.style.display = 'none';
@@ -115,7 +113,6 @@ function App() {
   const [isPTTActive, setIsPTTActive] = useState<boolean>(false);
   const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState<boolean>(false);
   const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] = useState<boolean>(true);
-  const [isClient, setIsClient] = useState<boolean>(false);
 
   // Initialize the recording hook.
   const { startRecording, stopRecording, downloadRecording } =
@@ -376,19 +373,14 @@ function App() {
   }, [isClient]);
 
   useEffect(() => {
-    if (!isClient) return;
     localStorage.setItem("pushToTalkUI", isPTTActive.toString());
   }, [isPTTActive]);
 
   useEffect(() => {
-    if (!isClient) return;
-    if (!isClient) return;
-    
     localStorage.setItem("logsExpanded", isEventsPaneExpanded.toString());
   }, [isEventsPaneExpanded]);
 
   useEffect(() => {
-    if (!isClient) return;
     localStorage.setItem(
       "audioPlaybackEnabled",
       isAudioPlaybackEnabled.toString()
@@ -542,23 +534,21 @@ function App() {
         <Events isExpanded={isEventsPaneExpanded} />
       </div>
 
-      {isClient && (
-        <BottomToolbar
-          sessionStatus={sessionStatus}
-          onToggleConnection={onToggleConnection}
-          isPTTActive={isPTTActive}
-          setIsPTTActive={setIsPTTActive}
-          isPTTUserSpeaking={isPTTUserSpeaking}
-          handleTalkButtonDown={handleTalkButtonDown}
-          handleTalkButtonUp={handleTalkButtonUp}
-          isEventsPaneExpanded={isEventsPaneExpanded}
-          setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-          isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-          setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-          codec={urlCodec}
-          onCodecChange={handleCodecChange}
-        />
-      )}
+      <BottomToolbar
+        sessionStatus={sessionStatus}
+        onToggleConnection={onToggleConnection}
+        isPTTActive={isPTTActive}
+        setIsPTTActive={setIsPTTActive}
+        isPTTUserSpeaking={isPTTUserSpeaking}
+        handleTalkButtonDown={handleTalkButtonDown}
+        handleTalkButtonUp={handleTalkButtonUp}
+        isEventsPaneExpanded={isEventsPaneExpanded}
+        setIsEventsPaneExpanded={setIsEventsPaneExpanded}
+        isAudioPlaybackEnabled={isAudioPlaybackEnabled}
+        setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
+        codec={urlCodec}
+        onCodecChange={handleCodecChange}
+      />
     </div>
   );
 }
