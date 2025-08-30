@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
+import dynamic from "next/dynamic";
 
 import Image from "next/image";
 
@@ -40,6 +41,11 @@ const sdkScenarioMap: Record<string, RealtimeAgent[]> = {
 
 import useAudioDownload from "./hooks/useAudioDownload";
 import { useHandleSessionHistory } from "./hooks/useHandleSessionHistory";
+
+// Make audio-related components client-only to avoid hydration issues
+const ClientOnlyAudioComponents = dynamic(() => Promise.resolve(() => null), {
+  ssr: false
+});
 
 function App() {
   const searchParams = useSearchParams()!;
@@ -118,9 +124,11 @@ function App() {
   const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] = useState<boolean | undefined>(undefined);
 
   const [isClient, setIsClient] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
+    setHasInitialized(true);
   }, []);
 
   // Initialize the recording hook.
@@ -139,27 +147,29 @@ function App() {
   useHandleSessionHistory();
 
   useEffect(() => {
-    let finalAgentConfig = searchParams.get("agentConfig");
-    if (!finalAgentConfig || !allAgentSets[finalAgentConfig]) {
-      finalAgentConfig = defaultAgentSetKey;
-      const url = new URL(window.location.toString());
-      url.searchParams.set("agentConfig", finalAgentConfig);
-      window.location.replace(url.toString());
-      return;
+    if (isClient) {
+      let finalAgentConfig = searchParams.get("agentConfig");
+      if (!finalAgentConfig || !allAgentSets[finalAgentConfig]) {
+        finalAgentConfig = defaultAgentSetKey;
+        const url = new URL(window.location.toString());
+        url.searchParams.set("agentConfig", finalAgentConfig);
+        window.location.replace(url.toString());
+        return;
+      }
+
+      const agents = allAgentSets[finalAgentConfig];
+      const agentKeyToUse = agents[0]?.name || "";
+
+      setSelectedAgentName(agentKeyToUse);
+      setSelectedAgentConfigSet(agents);
     }
-
-    const agents = allAgentSets[finalAgentConfig];
-    const agentKeyToUse = agents[0]?.name || "";
-
-    setSelectedAgentName(agentKeyToUse);
-    setSelectedAgentConfigSet(agents);
-  }, [searchParams]);
+  }, [searchParams, isClient]);
 
   useEffect(() => {
-    if (selectedAgentName && sessionStatus === "DISCONNECTED") {
+    if (isClient && selectedAgentName && sessionStatus === "DISCONNECTED") {
       connectToRealtime();
     }
-  }, [selectedAgentName]);
+  }, [selectedAgentName, isClient]);
 
   useEffect(() => {
     if (
@@ -367,31 +377,39 @@ function App() {
   };
 
   useEffect(() => {
-    const storedPushToTalkUI = localStorage.getItem("pushToTalkUI");
-    setIsPTTActive(storedPushToTalkUI ? storedPushToTalkUI === "true" : false);
-    
-    const storedLogsExpanded = localStorage.getItem("logsExpanded");
-    setIsEventsPaneExpanded(storedLogsExpanded ? storedLogsExpanded === "true" : false);
-    
-    const storedAudioPlaybackEnabled = localStorage.getItem(
-      "audioPlaybackEnabled"
-    );
-    setIsAudioPlaybackEnabled(storedAudioPlaybackEnabled ? storedAudioPlaybackEnabled === "true" : true);
+    if (isClient) {
+      const storedPushToTalkUI = localStorage.getItem("pushToTalkUI");
+      setIsPTTActive(storedPushToTalkUI ? storedPushToTalkUI === "true" : false);
+      
+      const storedLogsExpanded = localStorage.getItem("logsExpanded");
+      setIsEventsPaneExpanded(storedLogsExpanded ? storedLogsExpanded === "true" : false);
+      
+      const storedAudioPlaybackEnabled = localStorage.getItem(
+        "audioPlaybackEnabled"
+      );
+      setIsAudioPlaybackEnabled(storedAudioPlaybackEnabled ? storedAudioPlaybackEnabled === "true" : true);
+    }
   }, [isClient]);
 
   useEffect(() => {
-    localStorage.setItem("pushToTalkUI", isPTTActive.toString());
+    if (isClient && isPTTActive !== undefined) {
+      localStorage.setItem("pushToTalkUI", isPTTActive.toString());
+    }
   }, [isPTTActive]);
 
   useEffect(() => {
-    localStorage.setItem("logsExpanded", isEventsPaneExpanded.toString());
+    if (isClient && isEventsPaneExpanded !== undefined) {
+      localStorage.setItem("logsExpanded", isEventsPaneExpanded.toString());
+    }
   }, [isEventsPaneExpanded]);
 
   useEffect(() => {
-    localStorage.setItem(
-      "audioPlaybackEnabled",
-      isAudioPlaybackEnabled.toString()
-    );
+    if (isClient && isAudioPlaybackEnabled !== undefined) {
+      localStorage.setItem(
+        "audioPlaybackEnabled",
+        isAudioPlaybackEnabled.toString()
+      );
+    }
   }, [isAudioPlaybackEnabled]);
 
   useEffect(() => {
@@ -443,6 +461,15 @@ function App() {
   }, [sessionStatus]);
 
   const agentSetKey = searchParams.get("agentConfig") || "default";
+
+  // Show loading state during hydration to prevent mismatch
+  if (!hasInitialized) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-100">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="text-base flex flex-col h-screen bg-gray-100 text-gray-800 relative">
@@ -525,14 +552,14 @@ function App() {
             </div>
           )}
         </div>
-      </div>
+          isPTTActive={isPTTActive || false}
 
       <div className="flex flex-1 gap-2 px-2 overflow-hidden relative">
         <Transcript
           userText={userText}
-          setUserText={setUserText}
+          isEventsPaneExpanded={isEventsPaneExpanded || false}
           onSendMessage={handleSendTextMessage}
-          downloadRecording={downloadRecording}
+          isAudioPlaybackEnabled={isAudioPlaybackEnabled || true}
           canSend={
             sessionStatus === "CONNECTED"
           }
