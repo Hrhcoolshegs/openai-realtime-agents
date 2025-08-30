@@ -111,11 +111,11 @@ function App() {
     useState<SessionStatus>("DISCONNECTED");
 
   const [isEventsPaneExpanded, setIsEventsPaneExpanded] =
-    useState<boolean>(false);
+    useState<boolean | undefined>(undefined);
   const [userText, setUserText] = useState<string>("");
-  const [isPTTActive, setIsPTTActive] = useState<boolean>(false);
+  const [isPTTActive, setIsPTTActive] = useState<boolean | undefined>(undefined);
   const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState<boolean>(false);
-  const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] = useState<boolean>(true);
+  const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] = useState<boolean | undefined>(undefined);
 
   const [isClient, setIsClient] = useState(false);
 
@@ -368,19 +368,15 @@ function App() {
 
   useEffect(() => {
     const storedPushToTalkUI = localStorage.getItem("pushToTalkUI");
-    if (storedPushToTalkUI) {
-      setIsPTTActive(storedPushToTalkUI === "true");
-    }
+    setIsPTTActive(storedPushToTalkUI ? storedPushToTalkUI === "true" : false);
+    
     const storedLogsExpanded = localStorage.getItem("logsExpanded");
-    if (storedLogsExpanded) {
-      setIsEventsPaneExpanded(storedLogsExpanded === "true");
-    }
+    setIsEventsPaneExpanded(storedLogsExpanded ? storedLogsExpanded === "true" : false);
+    
     const storedAudioPlaybackEnabled = localStorage.getItem(
       "audioPlaybackEnabled"
     );
-    if (storedAudioPlaybackEnabled) {
-      setIsAudioPlaybackEnabled(storedAudioPlaybackEnabled === "true");
-    }
+    setIsAudioPlaybackEnabled(storedAudioPlaybackEnabled ? storedAudioPlaybackEnabled === "true" : true);
   }, [isClient]);
 
   useEffect(() => {
@@ -543,19 +539,20 @@ function App() {
         />
 
         <Events isExpanded={isEventsPaneExpanded} />
+        <Events isExpanded={isEventsPaneExpanded ?? false} />
       </div>
 
       <BottomToolbar
         sessionStatus={sessionStatus}
         onToggleConnection={onToggleConnection}
-        isPTTActive={isPTTActive}
+        isPTTActive={isPTTActive ?? false}
         setIsPTTActive={setIsPTTActive}
         isPTTUserSpeaking={isPTTUserSpeaking}
         handleTalkButtonDown={handleTalkButtonDown}
         handleTalkButtonUp={handleTalkButtonUp}
-        isEventsPaneExpanded={isEventsPaneExpanded}
+        isEventsPaneExpanded={isEventsPaneExpanded ?? false}
         setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-        isAudioPlaybackEnabled={isAudioPlaybackEnabled}
+        isAudioPlaybackEnabled={isAudioPlaybackEnabled ?? true}
         setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
         codec={urlCodec}
         onCodecChange={handleCodecChange}
